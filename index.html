@@ -2,51 +2,110 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Tehilim Hébraïque</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tehilim du jour</title>
     <style>
         :root {
             --primary: #2c3e50;
             --highlight: #fff9c4;
             --accent: #3498db;
             --text: #333;
+            --header-height: 100px;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #f4f7f6;
             margin: 0;
-            padding: 10px;
+            padding: 0;
+            color: var(--text);
         }
+        /* Header Fixe */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: var(--header-height);
+            background: white;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        h1 { 
+            margin: 0; 
+            color: var(--primary); 
+            font-size: 1.4rem; 
+        }
+        .date-info { 
+            font-weight: bold; 
+            color: var(--accent); 
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        /* Container du tableau avec marge pour le header */
         .container {
             max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: var(--header-height) auto 20px auto;
+            padding: 10px;
         }
-        h1 { text-align: center; color: var(--primary); margin-bottom: 5px; font-size: 1.4rem; }
-        .date-info { text-align: center; font-weight: bold; color: var(--accent); margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: var(--primary); color: white; padding: 10px; font-size: 0.8rem; position: sticky; top: 0; }
-        td { padding: 12px 8px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        .today { background-color: var(--highlight) !important; font-weight: bold; border-left: 5px solid #f1c40f; }
-        .bar-container { width: 100%; background: #eee; height: 6px; border-radius: 3px; margin-top: 5px; }
-        .bar { height: 100%; background: var(--accent); border-radius: 3px; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        th { 
+            background: #eee; 
+            color: var(--primary); 
+            padding: 12px 8px; 
+            font-size: 0.75rem; 
+            text-transform: uppercase;
+            text-align: left;
+        }
+        td { 
+            padding: 15px 8px; 
+            border-bottom: 1px solid #f0f0f0; 
+            font-size: 1rem; 
+        }
+        /* Surlignage du jour */
+        .today { 
+            background-color: var(--highlight) !important; 
+            font-weight: bold; 
+            border-left: 6px solid #f1c40f; 
+        }
+        .bar-container { 
+            width: 100%; 
+            background: #f0f0f0; 
+            height: 6px; 
+            border-radius: 3px; 
+            margin-top: 6px; 
+        }
+        .bar { 
+            height: 100%; 
+            background: var(--accent); 
+            border-radius: 3px; 
+        }
+        .v-text { font-size: 0.8rem; color: #7f8c8d; }
     </style>
 </head>
 <body>
 
+<header>
+    <h1>Tehilim du jour</h1>
+    <div id="hebrewDateDisplay" class="date-info">Chargement...</div>
+</header>
+
 <div class="container">
-    <h1>📅 Tehilim du Mois</h1>
-    <div id="hebrewDateDisplay" class="date-info">Chargement de la date...</div>
-    
     <table id="tehilimTable">
         <thead>
             <tr>
-                <th>Jour</th>
-                <th>Psaumes</th>
-                <th>Versets</th>
+                <th style="width: 15%;">Jour</th>
+                <th style="width: 45%;">Psaumes</th>
+                <th style="width: 40%;">Volume</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -54,43 +113,40 @@
 </div>
 
 <script>
-    // 1. Détecter le jour hébraïque actuel
+    // 1. Calcul de la date hébraïque
     const options = { day: 'numeric', calendar: 'hebrew' };
     const formatter = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', options);
     const parts = formatter.formatToParts(new Date());
     const hebrewDay = parseInt(parts.find(p => p.type === 'day').value);
     
-    // Pour afficher la date complète en haut
     const fullFormatter = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric', month:'long', year:'numeric'});
-    document.getElementById('hebrewDateDisplay').innerText = "Aujourd'hui : " + fullFormatter.format(new Date());
+    document.getElementById('hebrewDateDisplay').innerText = fullFormatter.format(new Date());
 
-    // 2. Vérifier si le mois actuel fait 29 ou 30 jours (pour le cumul du dernier jour)
-    // On vérifie si le jour après le 29 est le 30 ou le 1er du mois suivant
+    // Vérification mois de 29 jours
     const checkDate = new Date();
-    const currentHebrewMonth = new Intl.DateTimeFormat('en-u-ca-hebrew', {month: 'numeric'}).format(checkDate);
     const nextDay = new Date(checkDate);
     nextDay.setDate(nextDay.getDate() + 1);
     const isEndOfShortMonth = (hebrewDay === 29 && new Intl.DateTimeFormat('en-u-ca-hebrew', {day: 'numeric'}).format(nextDay) == "1");
 
-    // 3. Données
+    // 2. Données des Psaumes
     const data = [
-        [1, "1-9", 109], [2, "10-17", 78], [3, "18-22", 122], [4, "23-28", 73], [5, "29-34", 105],
-        [6, "35-38", 104], [7, "39-43", 63], [8, "44-48", 82], [9, "49-54", 92], [10, "55-59", 80],
-        [11, "60-65", 73], [12, "66-68", 64], [13, "69-71", 67], [14, "72-76", 95], [15, "77-78", 93],
-        [16, "79-82", 58], [17, "83-87", 70], [18, "88-89", 72], [19, "90-96", 101], [20, "97-103", 94],
-        [21, "104-105", 80], [22, "106-107", 91], [23, "108-112", 72], [24, "113-118", 85], [25, "119 (1-96)", 96],
-        [26, "119 (97-176)", 80], [27, "120-134", 101], [28, "135-139", 88], [29, "140-144", 59], [30, "145-150", 80]
+        [1, "1 à 9", 109], [2, "10 à 17", 78], [3, "18 à 22", 122], [4, "23 à 28", 73], [5, "29 à 34", 105],
+        [6, "35 à 38", 104], [7, "39 à 43", 63], [8, "44 à 48", 82], [9, "49 à 54", 92], [10, "55 à 59", 80],
+        [11, "60 à 65", 73], [12, "66 à 68", 64], [13, "69 à 71", 67], [14, "72 à 76", 95], [15, "77 à 78", 93],
+        [16, "79 à 82", 58], [17, "83 à 87", 70], [18, "88 à 89", 72], [19, "90 à 96", 101], [20, "97 à 103", 94],
+        [21, "104 à 105", 80], [22, "106 à 107", 91], [23, "108 à 112", 72], [24, "113 à 118", 85], [25, "119 (1-96)", 96],
+        [26, "119 (97-176)", 80], [27, "120 à 134", 101], [28, "135 à 139", 88], [29, "140 à 144", 59], [30, "145 à 150", 80]
     ];
 
     const tbody = document.querySelector("#tehilimTable tbody");
+    let targetRow = null;
 
     data.forEach(([day, psalms, verses]) => {
         const tr = document.createElement("tr");
         
-        // LOGIQUE DE SURLIGNAGE :
-        // Si jour normal OU (si c'est le 29 d'un mois court, surligne 29 ET 30)
         if (day === hebrewDay || (isEndOfShortMonth && day === 30)) {
             tr.className = "today";
+            targetRow = tr;
         }
 
         const percentage = (verses / 122) * 100;
@@ -98,13 +154,29 @@
             <td>${day}</td>
             <td>${psalms}</td>
             <td>
-                ${verses}
+                <span class="v-text">${verses} versets</span>
                 <div class="bar-container"><div class="bar" style="width: ${percentage}%"></div></div>
             </td>
         `;
         tbody.appendChild(tr);
-        if (day === hebrewDay) { tr.scrollIntoView({behavior: "smooth", block: "center"}); }
     });
+
+    // 3. Fonction de Scroll au milieu
+    window.onload = function() {
+        if (targetRow) {
+            // Calcul de l'offset pour centrer la ligne (Position ligne - milieu écran + hauteur header)
+            const windowHeight = window.innerHeight;
+            const rowOffset = targetRow.offsetTop;
+            const rowHeight = targetRow.offsetHeight;
+            const headerHeight = 100;
+
+            window.scrollTo({
+                top: rowOffset - (windowHeight / 2) + (rowHeight / 2),
+                behavior: 'smooth'
+            });
+        }
+    };
 </script>
+
 </body>
 </html>
