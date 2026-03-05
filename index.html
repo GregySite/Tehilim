@@ -2,193 +2,191 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tehilim du jour</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Tehilim Interactif</title>
     <style>
         :root {
             --primary: #2c3e50;
             --highlight: #fff9c4;
             --accent: #3498db;
             --text: #333;
-            --header-height: 95px;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #f4f7f6;
             margin: 0;
-            padding: 0;
+            padding: 10px;
             color: var(--text);
         }
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: var(--header-height);
-            background: white;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        h1 { margin: 0; color: var(--primary); font-size: 1.3rem; }
-        .date-container { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            margin-top: 5px;
-        }
-        .date-info { font-weight: bold; color: var(--accent); font-size: 0.95rem; }
-        
-        /* Bouton Refresh en haut à droite de la zone date */
-        .refresh-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            color: var(--accent);
-        }
-        .refresh-icon svg { width: 18px; height: 18px; fill: currentColor; }
-
         .container {
             max-width: 600px;
-            margin: calc(var(--header-height) + 15px) auto 80px auto;
-            padding: 0 10px;
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
+            margin: 0 auto;
             background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        th { background: #f8f9fa; color: #7f8c8d; padding: 12px 8px; font-size: 0.7rem; text-transform: uppercase; text-align: left; }
-        td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; }
-        
-        .today { background-color: var(--highlight) !important; border-left: 6px solid #f1c40f; }
-        .check-col { width: 45px; text-align: center; }
-        input[type="checkbox"] { transform: scale(1.4); }
-
-        .bar-container { width: 100%; background: #eee; height: 5px; border-radius: 3px; margin-top: 5px; }
-        .bar { height: 100%; background: var(--accent); border-radius: 3px; }
-        .v-text { font-size: 0.8rem; color: #95a5a6; }
-
-        footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
             padding: 15px;
-            background: white;
-            text-align: center;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            z-index: 1000;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .reset-btn {
-            background: #fdfdfd;
-            color: #e74c3c;
-            border: 1px solid #e74c3c;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        h1 { text-align: center; color: var(--primary); margin-bottom: 5px; font-size: 1.5rem; }
+        .date-info { text-align: center; font-weight: bold; color: var(--accent); margin-bottom: 15px; font-size: 0.95rem; }
+        
+        /* Design de l'interrupteur (Switch) */
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            font-weight: bold;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
             cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--primary);
+            transition: .4s;
+            border-radius: 34px;
         }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px; width: 26px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--primary); color: white; padding: 12px 8px; font-size: 0.9rem; text-align: left;}
+        td { padding: 12px 8px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        
+        .today { background-color: var(--highlight) !important; font-weight: bold; border-left: 5px solid #f1c40f; }
+        .bar-container { width: 100%; background: #e0e0e0; height: 6px; border-radius: 3px; margin-top: 6px; }
+        .bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.5s ease-in-out; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>Tehilim du jour</h1>
-    <div class="date-container">
-        <div id="hebrewDateDisplay" class="date-info">Chargement...</div>
-        <button class="refresh-icon" onclick="location.reload()" title="Rafraîchir">
-            <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        </button>
-    </div>
-</header>
-
 <div class="container">
+    <h1>📅 Mon Cycle de Tehilim</h1>
+    <div id="dateDisplay" class="date-info">Chargement...</div>
+    
+    <div class="toggle-container">
+        <span id="labelMonth" style="color: var(--accent);">1 Mois</span>
+        <label class="switch">
+            <input type="checkbox" id="modeSwitch">
+            <span class="slider"></span>
+        </label>
+        <span id="labelWeek" style="color: #ccc;">1 Semaine</span>
+    </div>
+    
     <table id="tehilimTable">
         <thead>
             <tr>
-                <th class="check-col">Fait</th>
-                <th style="width: 15%;">Jour</th>
+                <th id="thJour">Jour</th>
                 <th>Psaumes</th>
-                <th style="width: 30%;">Versets</th>
+                <th>Versets</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
 </div>
 
-<footer>
-    <button class="reset-btn" onclick="resetChecks()">Réinitialiser le mois</button>
-</footer>
-
 <script>
-    // --- 1. DATE HÉBRAÏQUE ---
-    function getCleanHebrewDate() {
-        const options = { day: 'numeric', month: 'long', year: 'numeric', calendar: 'hebrew' };
-        let dateStr = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', options).format(new Date());
-        return dateStr.replace(/A\.?\s?M\.?/gi, "").replace(/ap\.?\s?J\.?-?C\.?/gi, "").replace(/ère\s+commune/gi, "").trim();
-    }
+    // --- 1. Gestion des Dates (Hébraïque et Civile) ---
+    const dateObj = new Date();
+    
+    // Date Hébraïque
+    const hebrewParts = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', { day: 'numeric' }).formatToParts(dateObj);
+    const hebrewDay = parseInt(hebrewParts.find(p => p.type === 'day').value);
+    
+    // Jour de la semaine (Dimanche = 1, Lundi = 2 ... Shabbat = 7)
+    const jsDay = dateObj.getDay(); 
+    const weekDay = jsDay === 0 ? 1 : jsDay + 1; 
 
-    const hebrewDay = parseInt(new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric'}).format(new Date()));
-    document.getElementById('hebrewDateDisplay').innerText = getCleanHebrewDate();
+    // Affichage de la date complète en haut
+    const fullFormatter = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {weekday:'long', day:'numeric', month:'long'});
+    let dateText = fullFormatter.format(dateObj);
+    // Majuscule au premier lettre
+    dateText = dateText.charAt(0).toUpperCase() + dateText.slice(1);
+    document.getElementById('dateDisplay').innerText = "Aujourd'hui : " + dateText;
 
-    const nextDay = new Date();
-    nextDay.setDate(nextDay.getDate() + 1);
-    const isEndOfShortMonth = (hebrewDay === 29 && new Intl.DateTimeFormat('en-u-ca-hebrew', {day: 'numeric'}).format(nextDay) == "1");
+    // --- 2. Base de Données des deux cycles ---
+    const dataMonth = [
+        [1, "1 à 9", 109], [2, "10 à 17", 78], [3, "18 à 22", 122], [4, "23 à 28", 73], [5, "29 à 34", 105],
+        [6, "35 à 38", 104], [7, "39 à 43", 63], [8, "44 à 48", 82], [9, "49 à 54", 92], [10, "55 à 59", 80],
+        [11, "60 à 65", 73], [12, "66 à 68", 64], [13, "69 à 71", 67], [14, "72 à 76", 95], [15, "77 à 78", 93],
+        [16, "79 à 82", 58], [17, "83 à 87", 70], [18, "88 à 89", 72], [19, "90 à 96", 101], [20, "97 à 103", 94],
+        [21, "104 à 105", 80], [22, "106 à 107", 91], [23, "108 à 112", 72], [24, "113 à 118", 85], [25, "119 (1-96)", 96],
+        [26, "119 (97-176)", 80], [27, "120 à 134", 101], [28, "135 à 139", 88], [29, "140 à 144", 59], [30, "145 à 150", 80]
+    ];
 
-    // --- 2. DONNÉES ---
-    const data = [[1,"1-9",109],[2,"10-17",78],[3,"18-22",122],[4,"23-28",73],[5,"29-34",105],[6,"35-38",104],[7,"39-43",63],[8,"44-48",82],[9,"49-54",92],[10,"55-59",80],[11,"60-65",73],[12,"66-68",64],[13,"69-71",67],[14,"72-76",95],[15,"77-78",93],[16,"79-82",58],[17,"83-87",70],[18,"88-89",72],[19,"90-96",101],[20,"97-103",94],[21,"104-105",80],[22,"106-107",91],[23,"108-112",72],[24,"113-118",85],[25,"119 (1-96)",96],[26,"119 (97-176)",80],[27,"120-134",101],[28,"135-139",88],[29,"140-144",59],[30,"145-150",80]];
+    const dataWeek = [
+        ["Dimanche", "1 à 29", 393],
+        ["Lundi", "30 à 50", 386],
+        ["Mardi", "51 à 72", 353],
+        ["Mercredi", "73 à 89", 368],
+        ["Jeudi", "90 à 106", 323],
+        ["Vendredi", "107 à 119", 376],
+        ["Chabbat", "120 à 150", 328]
+    ];
 
+    // --- 3. Moteur d'affichage ---
     const tbody = document.querySelector("#tehilimTable tbody");
-    const savedChecks = JSON.parse(localStorage.getItem('tehilimChecks') || '{}');
-    let targetRow = null;
+    const modeSwitch = document.getElementById('modeSwitch');
 
-    data.forEach(([day, psalms, verses]) => {
-        const tr = document.createElement("tr");
-        if (day === hebrewDay || (isEndOfShortMonth && day === 30)) {
-            tr.className = "today";
-            targetRow = tr;
-        }
+    function renderTable() {
+        tbody.innerHTML = ""; // Vider le tableau
+        const isWeekly = modeSwitch.checked;
+        
+        // Gérer le style des labels autour du bouton
+        document.getElementById('labelMonth').style.color = isWeekly ? "#ccc" : "var(--accent)";
+        document.getElementById('labelWeek').style.color = isWeekly ? "var(--accent)" : "#ccc";
+        document.getElementById('thJour').innerText = isWeekly ? "Jour de la semaine" : "Jour du mois";
 
-        const isChecked = savedChecks[day] ? 'checked' : '';
-        const percentage = (verses / 122) * 100;
+        const currentData = isWeekly ? dataWeek : dataMonth;
+        const maxVerses = isWeekly ? 393 : 122; // Pour proportionner la barre graphique
 
-        tr.innerHTML = `
-            <td class="check-col"><input type="checkbox" ${isChecked} onclick="toggleDay(${day}, this.checked)"></td>
-            <td>${day}</td>
-            <td>${psalms}</td>
-            <td><span class="v-text">${verses} v.</span><div class="bar-container"><div class="bar" style="width: ${percentage}%"></div></div></td>
-        `;
-        tbody.appendChild(tr);
-    });
+        currentData.forEach((row, index) => {
+            const tr = document.createElement("tr");
+            
+            // Logique de surlignage
+            if (isWeekly) {
+                // Pour la semaine, index 0 = Dimanche (1), donc on vérifie si index + 1 == weekDay
+                if (index + 1 === weekDay) tr.className = "today";
+            } else {
+                // Pour le mois, on garde la logique de la date hébraïque (row[0] est le jour du mois)
+                if (row[0] === hebrewDay) tr.className = "today";
+            }
 
-    function toggleDay(day, checked) {
-        const checks = JSON.parse(localStorage.getItem('tehilimChecks') || '{}');
-        checks[day] = checked;
-        localStorage.setItem('tehilimChecks', JSON.stringify(checks));
+            const percentage = (row[2] / maxVerses) * 100;
+            tr.innerHTML = `
+                <td>${row[0]}</td>
+                <td><strong>${row[1]}</strong></td>
+                <td>
+                    <span style="font-size:0.8rem; color:#666;">${row[2]} versets</span>
+                    <div class="bar-container"><div class="bar" style="width: ${percentage}%"></div></div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
-    function resetChecks() {
-        if(confirm("Décocher toutes les cases ?")) {
-            localStorage.removeItem('tehilimChecks');
-            location.reload();
-        }
-    }
+    // Écouter les changements sur l'interrupteur
+    modeSwitch.addEventListener('change', renderTable);
 
-    // --- 3. AUTO-SCROLL ---
-    window.onload = function() {
-        if (targetRow) {
-            const rowOffset = targetRow.offsetTop;
-            window.scrollTo({ top: rowOffset - (window.innerHeight / 2) + 45, behavior: 'smooth' });
-        }
-    };
+    // Premier affichage au chargement de la page
+    renderTable();
+
 </script>
 </body>
 </html>
