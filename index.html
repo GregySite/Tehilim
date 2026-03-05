@@ -10,37 +10,41 @@
             --highlight: #fff9c4;
             --accent: #3498db;
             --text: #333;
-            --header-height: 90px;
+            --header-height: 95px;
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: var(--text); }
         
         header {
             position: fixed; top: 0; width: 100%; height: var(--header-height);
             background: white; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 0 15px; box-sizing: border-box;
-            display: flex; flex-direction: column; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
-        
-        .top-line { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        h1 { margin: 0; color: var(--primary); font-size: 1.1rem; }
-        
-        /* Switch discret */
-        .switch { position: relative; display: flex; width: 100px; height: 26px; background: #eee; border-radius: 13px; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
-        .switch-label { flex: 1; text-align: center; line-height: 26px; z-index: 2; transition: color 0.3s; color: #7f8c8d; }
-        .switch-selection { position: absolute; left: 2px; top: 2px; width: 48px; height: 22px; background: var(--accent); border-radius: 11px; transition: 0.3s; z-index: 1; }
-        .mode-week .switch-selection { left: 50px; }
-        .mode-month .label-month, .mode-week .label-week { color: white; }
 
-        .date-line { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+        .header-content {
+            display: flex; align-items: center; gap: 20px;
+        }
+
+        .main-info { text-align: center; }
+        
+        h1 { margin: 0; color: var(--primary); font-size: 1.2rem; line-height: 1.2; }
+        
+        .date-line { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 3px; }
         .date-info { font-weight: bold; color: var(--accent); font-size: 0.85rem; }
         
-        .refresh-btn { background: none; border: none; padding: 4px; color: var(--accent); display: flex; align-items: center; }
-        .refresh-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .refresh-btn { background: none; border: none; padding: 2px; color: var(--accent); display: flex; align-items: center; cursor: pointer; }
+        .refresh-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+        /* Switch compact à côté du bloc central */
+        .switch { position: relative; display: flex; width: 84px; height: 24px; background: #eee; border-radius: 12px; cursor: pointer; font-size: 0.65rem; font-weight: bold; }
+        .switch-label { flex: 1; text-align: center; line-height: 24px; z-index: 2; transition: color 0.3s; color: #7f8c8d; }
+        .switch-selection { position: absolute; left: 2px; top: 2px; width: 40px; height: 20px; background: var(--accent); border-radius: 10px; transition: 0.3s; z-index: 1; }
+        .mode-week .switch-selection { left: 42px; }
+        .mode-month .label-month, .mode-week .label-week { color: white; }
 
         .container { max-width: 600px; margin: calc(var(--header-height) + 10px) auto 80px auto; padding: 0 10px; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         th { background: #f8f9fa; color: #7f8c8d; padding: 10px 8px; font-size: 0.65rem; text-transform: uppercase; text-align: left; }
-        td { padding: 10px 8px; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; }
+        td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; vertical-align: middle; }
         
         .today { background-color: var(--highlight) !important; border-left: 5px solid #f1c40f; }
         .check-col { width: 40px; text-align: center; }
@@ -51,25 +55,28 @@
         .v-text { font-size: 0.75rem; color: #95a5a6; }
 
         footer { position: fixed; bottom: 0; width: 100%; padding: 12px; background: white; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
-        .reset-btn { background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 12px; border-radius: 15px; font-size: 0.75rem; }
+        .reset-btn { background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 15px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; }
     </style>
 </head>
 <body class="mode-month">
 
 <header>
-    <div class="top-line">
-        <h1>Tehilim</h1>
+    <div class="header-content">
+        <div class="main-info">
+            <h1>Tehilim du jour</h1>
+            <div class="date-line">
+                <div id="hebrewDateDisplay" class="date-info">...</div>
+                <button class="refresh-btn" onclick="location.reload()">
+                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                </button>
+            </div>
+        </div>
+        
         <div class="switch" onclick="toggleMode()">
             <span class="switch-label label-month">Mois</span>
-            <span class="switch-label label-week">Sem</span>
+            <span class="switch-label label-week">Sem.</span>
             <div class="switch-selection"></div>
         </div>
-    </div>
-    <div class="date-line">
-        <div id="hebrewDateDisplay" class="date-info">...</div>
-        <button class="refresh-btn" onclick="location.reload()">
-            <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        </button>
     </div>
 </header>
 
@@ -88,7 +95,7 @@
 </div>
 
 <footer>
-    <button class="reset-btn" onclick="resetChecks()">Réinitialiser le cycle</button>
+    <button class="reset-btn" onclick="resetChecks()">Réinitialiser ce cycle</button>
 </footer>
 
 <script>
