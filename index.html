@@ -119,7 +119,16 @@
     const parts = formatter.formatToParts(new Date());
     const hebrewDay = parseInt(parts.find(p => p.type === 'day').value);
     
-    const fullFormatter = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric', month:'long', year:'numeric'});
+    const fullFormatter = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric',
+    era: undefined // On s'assure que l'ère ne s'affiche pas
+});
+
+// Et on nettoie manuellement au cas où le navigateur insiste
+let formattedDate = fullFormatter.format(new Date()).replace("A.M.", "").replace("ap. J.-C.", "").trim();
+document.getElementById('hebrewDateDisplay').innerText = formattedDate;
     document.getElementById('hebrewDateDisplay').innerText = fullFormatter.format(new Date());
 
     // Vérification mois de 29 jours
