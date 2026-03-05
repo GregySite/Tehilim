@@ -10,7 +10,7 @@
             --highlight: #fff9c4;
             --accent: #3498db;
             --text: #333;
-            --header-height: 90px;
+            --header-height: 95px;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -33,8 +33,26 @@
             align-items: center;
         }
         h1 { margin: 0; color: var(--primary); font-size: 1.3rem; }
-        .date-info { font-weight: bold; color: var(--accent); font-size: 0.9rem; margin-top: 3px; }
+        .date-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin-top: 5px;
+        }
+        .date-info { font-weight: bold; color: var(--accent); font-size: 0.95rem; }
         
+        /* Bouton Refresh en haut à droite de la zone date */
+        .refresh-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            color: var(--accent);
+        }
+        .refresh-icon svg { width: 18px; height: 18px; fill: currentColor; }
+
         .container {
             max-width: 600px;
             margin: calc(var(--header-height) + 15px) auto 80px auto;
@@ -52,10 +70,8 @@
         td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; }
         
         .today { background-color: var(--highlight) !important; border-left: 6px solid #f1c40f; }
-        
-        /* Checkbox style */
-        .check-col { width: 40px; text-align: center; }
-        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
+        .check-col { width: 45px; text-align: center; }
+        input[type="checkbox"] { transform: scale(1.4); }
 
         .bar-container { width: 100%; background: #eee; height: 5px; border-radius: 3px; margin-top: 5px; }
         .bar { height: 100%; background: var(--accent); border-radius: 3px; }
@@ -69,11 +85,12 @@
             background: white;
             text-align: center;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
         }
         .reset-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
+            background: #fdfdfd;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
             padding: 8px 15px;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -85,7 +102,12 @@
 
 <header>
     <h1>Tehilim du jour</h1>
-    <div id="hebrewDateDisplay" class="date-info">Chargement...</div>
+    <div class="date-container">
+        <div id="hebrewDateDisplay" class="date-info">Chargement...</div>
+        <button class="refresh-icon" onclick="location.reload()" title="Rafraîchir">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </button>
+    </div>
 </header>
 
 <div class="container">
@@ -107,36 +129,22 @@
 </footer>
 
 <script>
-    // --- 1. GESTION DE LA DATE SANS "A.M." ---
+    // --- 1. DATE HÉBRAÏQUE ---
     function getCleanHebrewDate() {
         const options = { day: 'numeric', month: 'long', year: 'numeric', calendar: 'hebrew' };
         let dateStr = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', options).format(new Date());
-        
-        // Nettoyage agressif des suffixes
-        return dateStr
-            .replace(/A\.?\s?M\.?/gi, "")
-            .replace(/ap\.?\s?J\.?-?C\.?/gi, "")
-            .replace(/ère\s+commune/gi, "")
-            .trim();
+        return dateStr.replace(/A\.?\s?M\.?/gi, "").replace(/ap\.?\s?J\.?-?C\.?/gi, "").replace(/ère\s+commune/gi, "").trim();
     }
 
     const hebrewDay = parseInt(new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric'}).format(new Date()));
     document.getElementById('hebrewDateDisplay').innerText = getCleanHebrewDate();
 
-    // Vérification mois de 29 jours
     const nextDay = new Date();
     nextDay.setDate(nextDay.getDate() + 1);
     const isEndOfShortMonth = (hebrewDay === 29 && new Intl.DateTimeFormat('en-u-ca-hebrew', {day: 'numeric'}).format(nextDay) == "1");
 
-    // --- 2. DONNÉES ET RENDU ---
-    const data = [
-        [1,"1-9",109],[2,"10-17",78],[3,"18-22",122],[4,"23-28",73],[5,"29-34",105],
-        [6,"35-38",104],[7,"39-43",63],[8,"44-48",82],[9,"49-54",92],[10,"55-59",80],
-        [11,"60-65",73],[12,"66-68",64],[13,"69-71",67],[14,"72-76",95],[15,"77-78",93],
-        [16,"79-82",58],[17,"83-87",70],[18,"88-89",72],[19,"90-96",101],[20,"97-103",94],
-        [21,"104-105",80],[22,"106-107",91],[23,"108-112",72],[24,"113-118",85],[25,"119 (1-96)",96],
-        [26,"119 (97-176)",80],[27,"120-134",101],[28,"135-139",88],[29,"140-144",59],[30,"145-150",80]
-    ];
+    // --- 2. DONNÉES ---
+    const data = [[1,"1-9",109],[2,"10-17",78],[3,"18-22",122],[4,"23-28",73],[5,"29-34",105],[6,"35-38",104],[7,"39-43",63],[8,"44-48",82],[9,"49-54",92],[10,"55-59",80],[11,"60-65",73],[12,"66-68",64],[13,"69-71",67],[14,"72-76",95],[15,"77-78",93],[16,"79-82",58],[17,"83-87",70],[18,"88-89",72],[19,"90-96",101],[20,"97-103",94],[21,"104-105",80],[22,"106-107",91],[23,"108-112",72],[24,"113-118",85],[25,"119 (1-96)",96],[26,"119 (97-176)",80],[27,"120-134",101],[28,"135-139",88],[29,"140-144",59],[30,"145-150",80]];
 
     const tbody = document.querySelector("#tehilimTable tbody");
     const savedChecks = JSON.parse(localStorage.getItem('tehilimChecks') || '{}');
@@ -156,15 +164,11 @@
             <td class="check-col"><input type="checkbox" ${isChecked} onclick="toggleDay(${day}, this.checked)"></td>
             <td>${day}</td>
             <td>${psalms}</td>
-            <td>
-                <span class="v-text">${verses} v.</span>
-                <div class="bar-container"><div class="bar" style="width: ${percentage}%"></div></div>
-            </td>
+            <td><span class="v-text">${verses} v.</span><div class="bar-container"><div class="bar" style="width: ${percentage}%"></div></div></td>
         `;
         tbody.appendChild(tr);
     });
 
-    // --- 3. FONCTIONS UTILITAIRES ---
     function toggleDay(day, checked) {
         const checks = JSON.parse(localStorage.getItem('tehilimChecks') || '{}');
         checks[day] = checked;
@@ -172,19 +176,17 @@
     }
 
     function resetChecks() {
-        if(confirm("Voulez-vous décocher toutes les cases pour le nouveau mois ?")) {
+        if(confirm("Décocher toutes les cases ?")) {
             localStorage.removeItem('tehilimChecks');
             location.reload();
         }
     }
 
+    // --- 3. AUTO-SCROLL ---
     window.onload = function() {
         if (targetRow) {
             const rowOffset = targetRow.offsetTop;
-            window.scrollTo({
-                top: rowOffset - (window.innerHeight / 2) + 45,
-                behavior: 'smooth'
-            });
+            window.scrollTo({ top: rowOffset - (window.innerHeight / 2) + 45, behavior: 'smooth' });
         }
     };
 </script>
