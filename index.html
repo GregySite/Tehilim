@@ -5,19 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tehilim du jour</title>
     <style>
-        :root { --primary: #2c3e50; --highlight: #fff9c4; --accent: #3498db; --text: #333; --header-height: 100px; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: var(--text); }
-        header { position: fixed; top: 0; width: 100%; height: var(--header-height); background: white; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        h1 { margin: 0; color: var(--primary); font-size: 1.4rem; }
-        .date-info { font-weight: bold; color: var(--accent); font-size: 0.9rem; margin-top: 5px; }
-        .container { max-width: 600px; margin: var(--header-height) auto 20px auto; padding: 10px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        th { background: #eee; color: var(--primary); padding: 12px 8px; font-size: 0.75rem; text-transform: uppercase; text-align: left; }
-        td { padding: 15px 8px; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
-        .today { background-color: var(--highlight) !important; font-weight: bold; border-left: 6px solid #f1c40f; }
-        .bar-container { width: 100%; background: #f0f0f0; height: 6px; border-radius: 3px; margin-top: 6px; }
+        :root {
+            --primary: #2c3e50;
+            --highlight: #fff9c4;
+            --accent: #3498db;
+            --text: #333;
+            --header-height: 90px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+        }
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: var(--header-height);
+            background: white;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        h1 { margin: 0; color: var(--primary); font-size: 1.3rem; }
+        .date-info { font-weight: bold; color: var(--accent); font-size: 0.9rem; margin-top: 3px; }
+        
+        .container {
+            max-width: 600px;
+            margin: calc(var(--header-height) + 15px) auto 80px auto;
+            padding: 0 10px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        th { background: #f8f9fa; color: #7f8c8d; padding: 12px 8px; font-size: 0.7rem; text-transform: uppercase; text-align: left; }
+        td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; vertical-align: middle; }
+        
+        .today { background-color: var(--highlight) !important; border-left: 6px solid #f1c40f; }
+        
+        /* Checkbox style */
+        .check-col { width: 40px; text-align: center; }
+        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; }
+
+        .bar-container { width: 100%; background: #eee; height: 5px; border-radius: 3px; margin-top: 5px; }
         .bar { height: 100%; background: var(--accent); border-radius: 3px; }
-        .v-text { font-size: 0.8rem; color: #7f8c8d; }
+        .v-text { font-size: 0.8rem; color: #95a5a6; }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            padding: 15px;
+            background: white;
+            text-align: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .reset-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -30,40 +91,55 @@
 <div class="container">
     <table id="tehilimTable">
         <thead>
-            <tr><th style="width: 15%;">Jour</th><th style="width: 45%;">Psaumes</th><th style="width: 40%;">Volume</th></tr>
+            <tr>
+                <th class="check-col">Fait</th>
+                <th style="width: 15%;">Jour</th>
+                <th>Psaumes</th>
+                <th style="width: 30%;">Versets</th>
+            </tr>
         </thead>
         <tbody></tbody>
     </table>
 </div>
 
+<footer>
+    <button class="reset-btn" onclick="resetChecks()">Réinitialiser le mois</button>
+</footer>
+
 <script>
-    // 1. Extraction propre de la date (Sans A.M. ni ère)
-    const date = new Date();
-    const formatter = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', { day: 'numeric', month: 'long', year: 'numeric' });
-    const parts = formatter.formatToParts(date);
-    
-    // On reconstruit la date uniquement avec les composants souhaités
-    const day = parts.find(p => p.type === 'day').value;
-    const month = parts.find(p => p.type === 'month').value;
-    const year = parts.find(p => p.type === 'year').value;
-    document.getElementById('hebrewDateDisplay').innerText = `${day} ${month} ${year}`;
+    // --- 1. GESTION DE LA DATE SANS "A.M." ---
+    function getCleanHebrewDate() {
+        const options = { day: 'numeric', month: 'long', year: 'numeric', calendar: 'hebrew' };
+        let dateStr = new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', options).format(new Date());
+        
+        // Nettoyage agressif des suffixes
+        return dateStr
+            .replace(/A\.?\s?M\.?/gi, "")
+            .replace(/ap\.?\s?J\.?-?C\.?/gi, "")
+            .replace(/ère\s+commune/gi, "")
+            .trim();
+    }
+
+    const hebrewDay = parseInt(new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric'}).format(new Date()));
+    document.getElementById('hebrewDateDisplay').innerText = getCleanHebrewDate();
 
     // Vérification mois de 29 jours
-    const nextDay = new Date(date);
+    const nextDay = new Date();
     nextDay.setDate(nextDay.getDate() + 1);
-    const hebrewDay = parseInt(parts.find(p => p.type === 'day').value);
-    const isEndOfShortMonth = (hebrewDay === 29 && new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day: 'numeric'}).format(nextDay) == "1");
+    const isEndOfShortMonth = (hebrewDay === 29 && new Intl.DateTimeFormat('en-u-ca-hebrew', {day: 'numeric'}).format(nextDay) == "1");
 
+    // --- 2. DONNÉES ET RENDU ---
     const data = [
-        [1, "1 à 9", 109], [2, "10 à 17", 78], [3, "18 à 22", 122], [4, "23 à 28", 73], [5, "29 à 34", 105],
-        [6, "35 à 38", 104], [7, "39 à 43", 63], [8, "44 à 48", 82], [9, "49 à 54", 92], [10, "55 à 59", 80],
-        [11, "60 à 65", 73], [12, "66 à 68", 64], [13, "69 à 71", 67], [14, "72 à 76", 95], [15, "77 à 78", 93],
-        [16, "79 à 82", 58], [17, "83 à 87", 70], [18, "88 à 89", 72], [19, "90 à 96", 101], [20, "97 à 103", 94],
-        [21, "104 à 105", 80], [22, "106 à 107", 91], [23, "108 à 112", 72], [24, "113 à 118", 85], [25, "119 (1-96)", 96],
-        [26, "119 (97-176)", 80], [27, "120 à 134", 101], [28, "135 à 139", 88], [29, "140 à 144", 59], [30, "145 à 150", 80]
+        [1,"1-9",109],[2,"10-17",78],[3,"18-22",122],[4,"23-28",73],[5,"29-34",105],
+        [6,"35-38",104],[7,"39-43",63],[8,"44-48",82],[9,"49-54",92],[10,"55-59",80],
+        [11,"60-65",73],[12,"66-68",64],[13,"69-71",67],[14,"72-76",95],[15,"77-78",93],
+        [16,"79-82",58],[17,"83-87",70],[18,"88-89",72],[19,"90-96",101],[20,"97-103",94],
+        [21,"104-105",80],[22,"106-107",91],[23,"108-112",72],[24,"113-118",85],[25,"119 (1-96)",96],
+        [26,"119 (97-176)",80],[27,"120-134",101],[28,"135-139",88],[29,"140-144",59],[30,"145-150",80]
     ];
 
     const tbody = document.querySelector("#tehilimTable tbody");
+    const savedChecks = JSON.parse(localStorage.getItem('tehilimChecks') || '{}');
     let targetRow = null;
 
     data.forEach(([day, psalms, verses]) => {
@@ -72,17 +148,43 @@
             tr.className = "today";
             targetRow = tr;
         }
+
+        const isChecked = savedChecks[day] ? 'checked' : '';
         const percentage = (verses / 122) * 100;
-        tr.innerHTML = `<td>${day}</td><td>${psalms}</td><td><span class="v-text">${verses} versets</span><div class="bar-container"><div class="bar" style="width: ${percentage}%"></div></div></td>`;
+
+        tr.innerHTML = `
+            <td class="check-col"><input type="checkbox" ${isChecked} onclick="toggleDay(${day}, this.checked)"></td>
+            <td>${day}</td>
+            <td>${psalms}</td>
+            <td>
+                <span class="v-text">${verses} v.</span>
+                <div class="bar-container"><div class="bar" style="width: ${percentage}%"></div></div>
+            </td>
+        `;
         tbody.appendChild(tr);
     });
 
+    // --- 3. FONCTIONS UTILITAIRES ---
+    function toggleDay(day, checked) {
+        const checks = JSON.parse(localStorage.getItem('tehilimChecks') || '{}');
+        checks[day] = checked;
+        localStorage.setItem('tehilimChecks', JSON.stringify(checks));
+    }
+
+    function resetChecks() {
+        if(confirm("Voulez-vous décocher toutes les cases pour le nouveau mois ?")) {
+            localStorage.removeItem('tehilimChecks');
+            location.reload();
+        }
+    }
+
     window.onload = function() {
         if (targetRow) {
-            const windowHeight = window.innerHeight;
             const rowOffset = targetRow.offsetTop;
-            const rowHeight = targetRow.offsetHeight;
-            window.scrollTo({ top: rowOffset - (windowHeight / 2) + (rowHeight / 2), behavior: 'smooth' });
+            window.scrollTo({
+                top: rowOffset - (window.innerHeight / 2) + 45,
+                behavior: 'smooth'
+            });
         }
     };
 </script>
