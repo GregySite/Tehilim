@@ -14,27 +14,16 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: var(--text); }
         
-        header {
-            position: fixed; top: 0; width: 100%; height: var(--header-height);
-            background: white; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        .header-content {
-            display: flex; align-items: center; gap: 20px;
-        }
-
+        header { position: fixed; top: 0; width: 100%; height: var(--header-height); background: white; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; }
+        .header-content { display: flex; align-items: center; gap: 20px; }
         .main-info { text-align: center; }
-        
         h1 { margin: 0; color: var(--primary); font-size: 1.2rem; line-height: 1.2; }
         
         .date-line { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 3px; }
         .date-info { font-weight: bold; color: var(--accent); font-size: 0.85rem; }
-        
-        .refresh-btn { background: none; border: none; padding: 2px; color: var(--accent); display: flex; align-items: center; cursor: pointer; }
+        .refresh-btn { background: none; border: none; padding: 2px; color: var(--accent); cursor: pointer; }
         .refresh-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
-        /* Switch compact à côté du bloc central */
         .switch { position: relative; display: flex; width: 84px; height: 24px; background: #eee; border-radius: 12px; cursor: pointer; font-size: 0.65rem; font-weight: bold; }
         .switch-label { flex: 1; text-align: center; line-height: 24px; z-index: 2; transition: color 0.3s; color: #7f8c8d; }
         .switch-selection { position: absolute; left: 2px; top: 2px; width: 40px; height: 20px; background: var(--accent); border-radius: 10px; transition: 0.3s; z-index: 1; }
@@ -44,11 +33,13 @@
         .container { max-width: 600px; margin: calc(var(--header-height) + 10px) auto 80px auto; padding: 0 10px; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         th { background: #f8f9fa; color: #7f8c8d; padding: 10px 8px; font-size: 0.65rem; text-transform: uppercase; text-align: left; }
-        td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; vertical-align: middle; }
         
+        tbody tr { cursor: pointer; transition: background 0.2s; }
+        tbody tr:active { background-color: #f0f8ff; }
+        td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; vertical-align: middle; }
         .today { background-color: var(--highlight) !important; border-left: 5px solid #f1c40f; }
         .check-col { width: 40px; text-align: center; }
-        input[type="checkbox"] { transform: scale(1.3); }
+        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
 
         .bar-container { width: 100%; background: #eee; height: 4px; border-radius: 2px; margin-top: 4px; }
         .bar { height: 100%; background: var(--accent); border-radius: 2px; }
@@ -56,6 +47,33 @@
 
         footer { position: fixed; bottom: 0; width: 100%; padding: 12px; background: white; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
         .reset-btn { background: white; color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 15px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; }
+
+        /* LISEUSE ET TEXTE HÉBREU */
+        #readerModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; overflow-y: auto; flex-direction: column; }
+        .reader-header { position: sticky; top: 0; background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .reader-header h2 { margin: 0; font-size: 1.2rem; }
+        .close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 10px; }
+        
+        .reader-content { padding: 20px; flex-grow: 1; padding-bottom: 40px; }
+        .hebrew-text { 
+            direction: rtl; 
+            text-align: justify; 
+            font-size: 1.6rem; /* Taille confortable pour lire les voyelles */
+            font-family: 'Times New Roman', "David", serif; 
+            line-height: 1.9; 
+            color: #111;
+        }
+        .hebrew-text p { 
+            border-bottom: 1px solid #eaeaea; 
+            padding-bottom: 20px; 
+            margin-bottom: 20px; 
+        }
+        
+        .loader { text-align: center; color: var(--accent); font-weight: bold; margin-top: 50px; font-size: 1.1rem; }
+        .error-msg { text-align: center; color: #e74c3c; margin-top: 50px; font-weight: bold; }
+        
+        .reader-footer { padding: 15px; text-align: center; background: #f8f9fa; border-top: 1px solid #eee; }
+        .done-btn { background: var(--accent); color: white; border: none; padding: 12px 30px; font-size: 1.1rem; border-radius: 25px; font-weight: bold; cursor: pointer; width: 80%; max-width: 300px; }
     </style>
 </head>
 <body class="mode-month">
@@ -65,13 +83,10 @@
         <div class="main-info">
             <h1>Tehilim du jour</h1>
             <div class="date-line">
-                <div id="hebrewDateDisplay" class="date-info">...</div>
-                <button class="refresh-btn" onclick="location.reload()">
-                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-                </button>
+                <div id="hebrewDateDisplay">...</div>
+                <button class="refresh-btn" onclick="location.reload()"><svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
             </div>
         </div>
-        
         <div class="switch" onclick="toggleMode()">
             <span class="switch-label label-month">Mois</span>
             <span class="switch-label label-week">Sem.</span>
@@ -83,12 +98,7 @@
 <div class="container">
     <table id="tehilimTable">
         <thead>
-            <tr>
-                <th class="check-col">Fait</th>
-                <th style="width: 15%;">Jour</th>
-                <th>Psaumes</th>
-                <th style="width: 25%;">V.</th>
-            </tr>
+            <tr><th class="check-col">Fait</th><th style="width: 15%;">Jour</th><th>Psaumes</th><th style="width: 25%;">V.</th></tr>
         </thead>
         <tbody></tbody>
     </table>
@@ -98,11 +108,40 @@
     <button class="reset-btn" onclick="resetChecks()">Réinitialiser ce cycle</button>
 </footer>
 
+<div id="readerModal">
+    <div class="reader-header">
+        <h2 id="readerTitle">Psaumes</h2>
+        <button class="close-btn" onclick="closeReader()">×</button>
+    </div>
+    <div class="reader-content" id="readerText">
+        </div>
+    <div class="reader-footer">
+        <button class="done-btn" onclick="markAsRead()">J'ai lu !</button>
+    </div>
+</div>
+
 <script>
-    const dataMonth = [[1,"1-9",109],[2,"10-17",78],[3,"18-22",122],[4,"23-28",73],[5,"29-34",105],[6,"35-38",104],[7,"39-43",63],[8,"44-48",82],[9,"49-54",92],[10,"55-59",80],[11,"60-65",73],[12,"66-68",64],[13,"69-71",67],[14,"72-76",95],[15,"77-78",93],[16,"79-82",58],[17,"83-87",70],[18,"88-89",72],[19,"90-96",101],[20,"97-103",94],[21,"104-105",80],[22,"106-107",91],[23,"108-112",72],[24,"113-118",85],[25,"119 (1-96)",96],[26,"119 (97-176)",80],[27,"120-134",101],[28,"135-139",88],[29,"140-144",59],[30,"145-150",80]];
-    const dataWeek = [["Dim","1-29",458],["Lun","30-50",353],["Mar","51-72",365],["Mer","73-89",354],["Jeu","90-106",442],["Ven","107-119",351],["Sam","120-150",204]];
+    // J'ai ajouté une 4ème colonne dans tes données : La référence exacte de l'API Sefaria
+    const dataMonth = [
+        [1,"1-9",109,"Psalms.1-9"], [2,"10-17",78,"Psalms.10-17"], [3,"18-22",122,"Psalms.18-22"], [4,"23-28",73,"Psalms.23-28"],
+        [5,"29-34",105,"Psalms.29-34"], [6,"35-38",104,"Psalms.35-38"], [7,"39-43",63,"Psalms.39-43"], [8,"44-48",82,"Psalms.44-48"],
+        [9,"49-54",92,"Psalms.49-54"], [10,"55-59",80,"Psalms.55-59"], [11,"60-65",73,"Psalms.60-65"], [12,"66-68",64,"Psalms.66-68"],
+        [13,"69-71",67,"Psalms.69-71"], [14,"72-76",95,"Psalms.72-76"], [15,"77-78",93,"Psalms.77-78"], [16,"79-82",58,"Psalms.79-82"],
+        [17,"83-87",70,"Psalms.83-87"], [18,"88-89",72,"Psalms.88-89"], [19,"90-96",101,"Psalms.90-96"], [20,"97-103",94,"Psalms.97-103"],
+        [21,"104-105",80,"Psalms.104-105"], [22,"106-107",91,"Psalms.106-107"], [23,"108-112",72,"Psalms.108-112"], [24,"113-118",85,"Psalms.113-118"],
+        [25,"119 (1-96)",96,"Psalms.119.1-96"], [26,"119 (97-176)",80,"Psalms.119.97-176"], [27,"120-134",101,"Psalms.120-134"],
+        [28,"135-139",88,"Psalms.135-139"], [29,"140-144",59,"Psalms.140-144"], [30,"145-150",80,"Psalms.145-150"]
+    ];
+    
+    const dataWeek = [
+        ["Dim","1-29",458,"Psalms.1-29"], ["Lun","30-50",353,"Psalms.30-50"], ["Mar","51-72",365,"Psalms.51-72"],
+        ["Mer","73-89",354,"Psalms.73-89"], ["Jeu","90-106",442,"Psalms.90-106"], ["Ven","107-119",351,"Psalms.107-119"],
+        ["Sam","120-150",204,"Psalms.120-150"]
+    ];
 
     let currentMode = localStorage.getItem('tehilimMode') || 'month';
+    let currentReadingId = null;
+    
     const hDay = parseInt(new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric'}).format(new Date()));
     const wDay = new Date().getDay();
 
@@ -125,9 +164,14 @@
                 if (dayNum === hDay || (isShort && dayNum === 30)) { tr.className = "today"; targetRow = tr; }
             } else if (dayNum === wDay) { tr.className = "today"; targetRow = tr; }
 
+            // Le clic lance la fonction asynchrone pour télécharger Sefaria
+            tr.onclick = () => openReader(dayNum, row[0], row[1], row[3]);
+
             const maxV = (currentMode === 'month') ? 122 : 458;
             tr.innerHTML = `
-                <td class="check-col"><input type="checkbox" ${checks[dayNum]?'checked':''} onclick="toggleCheck(${dayNum}, this.checked)"></td>
+                <td class="check-col" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="check-${dayNum}" ${checks[dayNum]?'checked':''} onclick="toggleCheck(${dayNum}, this.checked)">
+                </td>
                 <td>${row[0]}</td>
                 <td>${row[1]}</td>
                 <td><span class="v-text">${row[2]} v.</span><div class="bar-container"><div class="bar" style="width: ${(row[2]/maxV)*100}%"></div></div></td>
@@ -140,10 +184,74 @@
         }
     }
 
+    // --- FONCTION DE TÉLÉCHARGEMENT DYNAMIQUE (SEFARIA) ---
+    async function openReader(id, dayLabel, psalmsLabel, sefariaRef) {
+        currentReadingId = id;
+        document.getElementById('readerTitle').innerText = (currentMode === 'month' ? "Jour " : "") + dayLabel + " (Ps. " + psalmsLabel + ")";
+        
+        const readerText = document.getElementById('readerText');
+        document.getElementById('readerModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // 1. On vérifie si on a déjà téléchargé ce texte avant (Mémoire Cache)
+        const cacheKey = 'sefaria_cache_' + sefariaRef;
+        const cachedContent = localStorage.getItem(cacheKey);
+
+        if (cachedContent) {
+            readerText.innerHTML = cachedContent;
+            return; // On s'arrête là, c'est affiché instantanément !
+        }
+
+        // 2. Si pas en cache, on affiche "Chargement..."
+        readerText.innerHTML = '<div class="loader">Téléchargement du texte hébreu depuis Sefaria...<br><br><i>Veuillez patienter quelques secondes.</i></div>';
+
+        // 3. On télécharge le texte depuis l'API publique
+        try {
+            const response = await fetch(`https://www.sefaria.org/api/texts/${sefariaRef}?context=0`);
+            if (!response.ok) throw new Error("Erreur réseau");
+            
+            const data = await response.json();
+            
+            let htmlContent = '<div class="hebrew-text">';
+            
+            // Formatage : Sefaria peut renvoyer plusieurs psaumes ou un seul
+            if (Array.isArray(data.he[0])) {
+                // Plusieurs psaumes (ex: Jour 1 -> Psaumes 1 à 9)
+                data.he.forEach(psalmVerses => {
+                    htmlContent += "<p>" + psalmVerses.join(" &nbsp;&nbsp; ") + "</p>";
+                });
+            } else {
+                // Un seul grand Psaume (ex: 119)
+                htmlContent += "<p>" + data.he.join(" &nbsp;&nbsp; ") + "</p>";
+            }
+            
+            htmlContent += '</div>';
+
+            // 4. On l'affiche et on le sauvegarde en mémoire pour la prochaine fois
+            readerText.innerHTML = htmlContent;
+            localStorage.setItem(cacheKey, htmlContent);
+
+        } catch (error) {
+            readerText.innerHTML = '<div class="error-msg">Impossible de charger le texte.<br>Vérifiez votre connexion internet et réessayez.</div>';
+        }
+    }
+
+    function closeReader() { document.getElementById('readerModal').style.display = 'none'; document.body.style.overflow = 'auto'; currentReadingId = null; }
+
+    function markAsRead() {
+        if (currentReadingId !== null) {
+            toggleCheck(currentReadingId, true);
+            const checkbox = document.getElementById('check-' + currentReadingId);
+            if (checkbox) checkbox.checked = true;
+        }
+        closeReader();
+    }
+
     function toggleMode() { currentMode = (currentMode === 'month') ? 'week' : 'month'; localStorage.setItem('tehilimMode', currentMode); render(); }
     function toggleCheck(id, chk) { const c = JSON.parse(localStorage.getItem('checks_'+currentMode)||'{}'); c[id]=chk; localStorage.setItem('checks_'+currentMode, JSON.stringify(c)); }
     function resetChecks() { if(confirm("Réinitialiser ce cycle ?")) { localStorage.removeItem('checks_'+currentMode); render(); } }
     function getCleanHebrewDate() { return new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric', month:'long', year:'numeric', calendar:'hebrew'}).format(new Date()).replace(/A\.?\s?M\.?/gi, "").replace(/ap\.?\s?J\.?-?C\.?/gi, "").trim(); }
+    
     window.onload = render;
 </script>
 </body>
