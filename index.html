@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T53MN446GG"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-T53MN446GG');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tehilim du jour</title>
@@ -55,19 +63,8 @@
         .close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 10px; }
         
         .reader-content { padding: 20px; flex-grow: 1; padding-bottom: 40px; }
-        .hebrew-text { 
-            direction: rtl; 
-            text-align: justify; 
-            font-size: 1.6rem; /* Taille confortable pour lire les voyelles */
-            font-family: 'Times New Roman', "David", serif; 
-            line-height: 1.9; 
-            color: #111;
-        }
-        .hebrew-text p { 
-            border-bottom: 1px solid #eaeaea; 
-            padding-bottom: 20px; 
-            margin-bottom: 20px; 
-        }
+        .hebrew-text { direction: rtl; text-align: justify; font-size: 1.6rem; font-family: 'Times New Roman', "David", serif; line-height: 1.9; color: #111; }
+        .hebrew-text p { border-bottom: 1px solid #eaeaea; padding-bottom: 20px; margin-bottom: 20px; }
         
         .loader { text-align: center; color: var(--accent); font-weight: bold; margin-top: 50px; font-size: 1.1rem; }
         .error-msg { text-align: center; color: #e74c3c; margin-top: 50px; font-weight: bold; }
@@ -113,15 +110,13 @@
         <h2 id="readerTitle">Psaumes</h2>
         <button class="close-btn" onclick="closeReader()">×</button>
     </div>
-    <div class="reader-content" id="readerText">
-        </div>
+    <div class="reader-content" id="readerText"></div>
     <div class="reader-footer">
         <button class="done-btn" onclick="markAsRead()">J'ai lu !</button>
     </div>
 </div>
 
 <script>
-    // J'ai ajouté une 4ème colonne dans tes données : La référence exacte de l'API Sefaria
     const dataMonth = [
         [1,"1-9",109,"Psalms.1-9"], [2,"10-17",78,"Psalms.10-17"], [3,"18-22",122,"Psalms.18-22"], [4,"23-28",73,"Psalms.23-28"],
         [5,"29-34",105,"Psalms.29-34"], [6,"35-38",104,"Psalms.35-38"], [7,"39-43",63,"Psalms.39-43"], [8,"44-48",82,"Psalms.44-48"],
@@ -141,7 +136,6 @@
 
     let currentMode = localStorage.getItem('tehilimMode') || 'month';
     let currentReadingId = null;
-    
     const hDay = parseInt(new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric'}).format(new Date()));
     const wDay = new Date().getDay();
 
@@ -150,7 +144,6 @@
         document.getElementById('hebrewDateDisplay').innerText = getCleanHebrewDate();
         const tbody = document.querySelector("#tehilimTable tbody");
         tbody.innerHTML = "";
-        
         const data = (currentMode === 'month') ? dataMonth : dataWeek;
         const checks = JSON.parse(localStorage.getItem('checks_' + currentMode) || '{}');
         let targetRow = null;
@@ -158,15 +151,12 @@
         data.forEach((row, idx) => {
             const dayNum = (currentMode === 'month') ? row[0] : idx;
             const tr = document.createElement("tr");
-            
             if (currentMode === 'month') {
                 const isShort = (hDay === 29 && new Intl.DateTimeFormat('en-u-ca-hebrew', {day: 'numeric'}).format(new Date(new Date().getTime() + 86400000)) == "1");
                 if (dayNum === hDay || (isShort && dayNum === 30)) { tr.className = "today"; targetRow = tr; }
             } else if (dayNum === wDay) { tr.className = "today"; targetRow = tr; }
 
-            // Le clic lance la fonction asynchrone pour télécharger Sefaria
             tr.onclick = () => openReader(dayNum, row[0], row[1], row[3]);
-
             const maxV = (currentMode === 'month') ? 122 : 458;
             tr.innerHTML = `
                 <td class="check-col" onclick="event.stopPropagation()">
@@ -178,80 +168,56 @@
             `;
             tbody.appendChild(tr);
         });
-
-        if (targetRow) {
-            setTimeout(() => { window.scrollTo({ top: targetRow.offsetTop - (window.innerHeight / 2) + 45, behavior: 'smooth' }); }, 150);
-        }
+        if (targetRow) { setTimeout(() => { window.scrollTo({ top: targetRow.offsetTop - (window.innerHeight / 2) + 45, behavior: 'smooth' }); }, 150); }
     }
 
-    // --- FONCTION DE TÉLÉCHARGEMENT DYNAMIQUE (SEFARIA) ---
     async function openReader(id, dayLabel, psalmsLabel, sefariaRef) {
         currentReadingId = id;
         document.getElementById('readerTitle').innerText = (currentMode === 'month' ? "Jour " : "") + dayLabel + " (Ps. " + psalmsLabel + ")";
-        
         const readerText = document.getElementById('readerText');
         document.getElementById('readerModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
-        // 1. On vérifie si on a déjà téléchargé ce texte avant (Mémoire Cache)
         const cacheKey = 'sefaria_cache_' + sefariaRef;
         const cachedContent = localStorage.getItem(cacheKey);
+        if (cachedContent) { readerText.innerHTML = cachedContent; return; }
 
-        if (cachedContent) {
-            readerText.innerHTML = cachedContent;
-            return; // On s'arrête là, c'est affiché instantanément !
-        }
-
-        // 2. Si pas en cache, on affiche "Chargement..."
-        readerText.innerHTML = '<div class="loader">Téléchargement du texte hébreu depuis Sefaria...<br><br><i>Veuillez patienter quelques secondes.</i></div>';
-
-        // 3. On télécharge le texte depuis l'API publique
+        readerText.innerHTML = '<div class="loader">Téléchargement du texte hébreu...</div>';
         try {
             const response = await fetch(`https://www.sefaria.org/api/texts/${sefariaRef}?context=0`);
-            if (!response.ok) throw new Error("Erreur réseau");
-            
             const data = await response.json();
-            
             let htmlContent = '<div class="hebrew-text">';
-            
-            // Formatage : Sefaria peut renvoyer plusieurs psaumes ou un seul
             if (Array.isArray(data.he[0])) {
-                // Plusieurs psaumes (ex: Jour 1 -> Psaumes 1 à 9)
-                data.he.forEach(psalmVerses => {
-                    htmlContent += "<p>" + psalmVerses.join(" &nbsp;&nbsp; ") + "</p>";
-                });
+                data.he.forEach(psalmVerses => { htmlContent += "<p>" + psalmVerses.join(" &nbsp;&nbsp; ") + "</p>"; });
             } else {
-                // Un seul grand Psaume (ex: 119)
                 htmlContent += "<p>" + data.he.join(" &nbsp;&nbsp; ") + "</p>";
             }
-            
             htmlContent += '</div>';
-
-            // 4. On l'affiche et on le sauvegarde en mémoire pour la prochaine fois
             readerText.innerHTML = htmlContent;
             localStorage.setItem(cacheKey, htmlContent);
-
-        } catch (error) {
-            readerText.innerHTML = '<div class="error-msg">Impossible de charger le texte.<br>Vérifiez votre connexion internet et réessayez.</div>';
-        }
+        } catch (error) { readerText.innerHTML = '<div class="error-msg">Erreur de connexion.</div>'; }
     }
 
     function closeReader() { document.getElementById('readerModal').style.display = 'none'; document.body.style.overflow = 'auto'; currentReadingId = null; }
-
     function markAsRead() {
         if (currentReadingId !== null) {
             toggleCheck(currentReadingId, true);
             const checkbox = document.getElementById('check-' + currentReadingId);
             if (checkbox) checkbox.checked = true;
+            if(typeof gtag === 'function') { gtag('event', 'mark_as_read', {'day_id': currentReadingId, 'mode': currentMode}); }
         }
         closeReader();
     }
 
-    function toggleMode() { currentMode = (currentMode === 'month') ? 'week' : 'month'; localStorage.setItem('tehilimMode', currentMode); render(); }
+    function toggleMode() { 
+        currentMode = (currentMode === 'month') ? 'week' : 'month'; 
+        localStorage.setItem('tehilimMode', currentMode); 
+        if(typeof gtag === 'function') { gtag('event', 'toggle_mode', {'new_mode': currentMode}); }
+        render(); 
+    }
     function toggleCheck(id, chk) { const c = JSON.parse(localStorage.getItem('checks_'+currentMode)||'{}'); c[id]=chk; localStorage.setItem('checks_'+currentMode, JSON.stringify(c)); }
     function resetChecks() { if(confirm("Réinitialiser ce cycle ?")) { localStorage.removeItem('checks_'+currentMode); render(); } }
     function getCleanHebrewDate() { return new Intl.DateTimeFormat('fr-FR-u-ca-hebrew', {day:'numeric', month:'long', year:'numeric', calendar:'hebrew'}).format(new Date()).replace(/A\.?\s?M\.?/gi, "").replace(/ap\.?\s?J\.?-?C\.?/gi, "").trim(); }
-    
     window.onload = render;
 </script>
 </body>
