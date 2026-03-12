@@ -39,8 +39,26 @@
         .mode-month .label-month, .mode-week .label-week { color: white; }
 
         .container { max-width: 600px; margin: calc(var(--header-height) + 10px) auto 80px auto; padding: 0 10px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        th { background: #f8f9fa; color: #7f8c8d; padding: 10px 8px; font-size: 0.65rem; text-transform: uppercase; text-align: left; }
+        
+        /* MODIFICATION : On enlève l'overflow:hidden pour que le sticky fonctionne */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        /* MODIFICATION : Ajout du "sticky" sur les en-têtes de colonnes */
+        th { 
+            background: #f8f9fa; 
+            color: #7f8c8d; 
+            padding: 10px 8px; 
+            font-size: 0.65rem; 
+            text-transform: uppercase; 
+            text-align: left;
+            position: sticky;
+            top: var(--header-height); /* S'accroche juste sous le header principal */
+            z-index: 10;
+            border-bottom: 2px solid #eaeaea;
+        }
+        /* On redessine les coins arrondis en haut du tableau */
+        th:first-child { border-top-left-radius: 10px; }
+        th:last-child { border-top-right-radius: 10px; }
         
         tbody tr { cursor: pointer; transition: background 0.2s; }
         tbody tr:active { background-color: #f0f8ff; }
@@ -100,7 +118,7 @@
 <div class="container">
     <table id="tehilimTable">
         <thead>
-            <tr><th class="check-col">Fait</th><th style="width: 15%;">Jour</th><th>Psaumes</th><th style="width: 25%;">V.</th></tr>
+            <tr><th class="check-col">Fait</th><th style="width: 15%;">Jour</th><th>Psaumes</th><th style="width: 25%;">Versets</th></tr>
         </thead>
         <tbody></tbody>
     </table>
@@ -192,7 +210,6 @@
         document.getElementById('readerModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
-        // AJOUT : On crée une "fausse" page dans l'historique du navigateur
         history.pushState({ readerOpen: true }, '', '#reader');
 
         const cacheKey = 'sefaria_cache_' + sefariaRef;
@@ -215,13 +232,11 @@
         } catch (error) { readerText.innerHTML = '<div class="error-msg">Erreur de connexion.</div>'; }
     }
 
-    // MODIFICATION : On gère d'où vient la demande de fermeture
     function closeReader(fromHistory = false) { 
         document.getElementById('readerModal').style.display = 'none'; 
         document.body.style.overflow = 'auto'; 
         currentReadingId = null; 
         
-        // Si on ferme manuellement (croix ou "J'ai lu"), on retire la fausse page de l'historique
         if (!fromHistory) {
             history.back();
         }
@@ -237,10 +252,9 @@
         closeReader();
     }
 
-    // AJOUT : On écoute le bouton "Retour" du téléphone / navigateur
     window.addEventListener('popstate', function(event) {
         if (document.getElementById('readerModal').style.display === 'flex') {
-            closeReader(true); // true = l'action vient déjà de l'historique, on ne le modifie pas à nouveau
+            closeReader(true);
         }
     });
 
