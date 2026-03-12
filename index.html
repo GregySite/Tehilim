@@ -49,7 +49,6 @@
         .check-col { width: 40px; text-align: center; }
         input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
 
-        /* Nouveaux styles pour la cellule Versets + Chevron */
         .v-cell { display: flex; align-items: center; justify-content: space-between; }
         .v-content { width: 100%; padding-right: 8px; }
         .chevron { width: 18px; height: 18px; color: #bdc3c7; flex-shrink: 0; transition: transform 0.2s, color 0.2s; }
@@ -165,7 +164,6 @@
             tr.onclick = () => openReader(dayNum, row[0], row[1], row[3]);
             const maxV = (currentMode === 'month') ? 122 : 458;
             
-            // Ajout du chevron SVG dans la dernière cellule
             tr.innerHTML = `
                 <td class="check-col" onclick="event.stopPropagation()">
                     <input type="checkbox" id="check-${dayNum}" ${checks[dayNum]?'checked':''} onclick="toggleCheck(${dayNum}, this.checked)">
@@ -194,6 +192,9 @@
         document.getElementById('readerModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
+        // AJOUT : On crée une "fausse" page dans l'historique du navigateur
+        history.pushState({ readerOpen: true }, '', '#reader');
+
         const cacheKey = 'sefaria_cache_' + sefariaRef;
         const cachedContent = localStorage.getItem(cacheKey);
         if (cachedContent) { readerText.innerHTML = cachedContent; return; }
@@ -214,7 +215,18 @@
         } catch (error) { readerText.innerHTML = '<div class="error-msg">Erreur de connexion.</div>'; }
     }
 
-    function closeReader() { document.getElementById('readerModal').style.display = 'none'; document.body.style.overflow = 'auto'; currentReadingId = null; }
+    // MODIFICATION : On gère d'où vient la demande de fermeture
+    function closeReader(fromHistory = false) { 
+        document.getElementById('readerModal').style.display = 'none'; 
+        document.body.style.overflow = 'auto'; 
+        currentReadingId = null; 
+        
+        // Si on ferme manuellement (croix ou "J'ai lu"), on retire la fausse page de l'historique
+        if (!fromHistory) {
+            history.back();
+        }
+    }
+
     function markAsRead() {
         if (currentReadingId !== null) {
             toggleCheck(currentReadingId, true);
@@ -224,6 +236,13 @@
         }
         closeReader();
     }
+
+    // AJOUT : On écoute le bouton "Retour" du téléphone / navigateur
+    window.addEventListener('popstate', function(event) {
+        if (document.getElementById('readerModal').style.display === 'flex') {
+            closeReader(true); // true = l'action vient déjà de l'historique, on ne le modifie pas à nouveau
+        }
+    });
 
     function toggleMode() { 
         currentMode = (currentMode === 'month') ? 'week' : 'month'; 
