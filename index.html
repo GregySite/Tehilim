@@ -40,37 +40,42 @@
 
         .container { max-width: 600px; margin: calc(var(--header-height) + 10px) auto 80px auto; padding: 0 10px; }
         
-        /* MODIFICATION : On enlève l'overflow:hidden pour que le sticky fonctionne */
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); table-layout: fixed; /* Force les largeurs de colonnes */ }
         
-        /* MODIFICATION : Ajout du "sticky" sur les en-têtes de colonnes */
         th { 
             background: #f8f9fa; 
             color: #7f8c8d; 
-            padding: 10px 8px; 
+            padding: 12px 8px; /* Padding identique partout */
             font-size: 0.65rem; 
             text-transform: uppercase; 
             text-align: left;
             position: sticky;
-            top: var(--header-height); /* S'accroche juste sous le header principal */
+            top: var(--header-height); 
             z-index: 10;
             border-bottom: 2px solid #eaeaea;
+            height: 20px; /* Hauteur fixe pour éviter le saut visuel */
         }
-        /* On redessine les coins arrondis en haut du tableau */
+
+        /* Largeurs fixes pour que le passage Mois <-> Semaine soit invisible */
+        .col-fait { width: 45px; }
+        .col-jour { width: 60px; }
+        .col-psalms { width: auto; }
+        .col-versets { width: 90px; }
+
         th:first-child { border-top-left-radius: 10px; }
         th:last-child { border-top-right-radius: 10px; }
         
         tbody tr { cursor: pointer; transition: background 0.2s; }
         tbody tr:active { background-color: #f0f8ff; }
-        td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; vertical-align: middle; }
+        td { padding: 12px 8px; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
         .today { background-color: var(--highlight) !important; border-left: 5px solid #f1c40f; }
-        .check-col { width: 40px; text-align: center; }
+        .check-col { text-align: center; }
         input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
 
         .v-cell { display: flex; align-items: center; justify-content: space-between; }
-        .v-content { width: 100%; padding-right: 8px; }
-        .chevron { width: 18px; height: 18px; color: #bdc3c7; flex-shrink: 0; transition: transform 0.2s, color 0.2s; }
-        tbody tr:active .chevron { color: var(--accent); transform: translateX(3px); }
+        .v-content { width: 100%; padding-right: 5px; }
+        .chevron { width: 16px; height: 16px; color: #bdc3c7; flex-shrink: 0; }
 
         .bar-container { width: 100%; background: #eee; height: 4px; border-radius: 2px; margin-top: 4px; }
         .bar { height: 100%; background: var(--accent); border-radius: 2px; }
@@ -118,7 +123,12 @@
 <div class="container">
     <table id="tehilimTable">
         <thead>
-            <tr><th class="check-col">Fait</th><th style="width: 15%;">Jour</th><th>Psaumes</th><th style="width: 25%;">Versets</th></tr>
+            <tr>
+                <th class="col-fait check-col">Fait</th>
+                <th class="col-jour">Jour</th>
+                <th class="col-psalms">Psaumes</th>
+                <th class="col-versets">Versets</th>
+            </tr>
         </thead>
         <tbody></tbody>
     </table>
@@ -209,7 +219,6 @@
         const readerText = document.getElementById('readerText');
         document.getElementById('readerModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
-
         history.pushState({ readerOpen: true }, '', '#reader');
 
         const cacheKey = 'sefaria_cache_' + sefariaRef;
@@ -236,10 +245,7 @@
         document.getElementById('readerModal').style.display = 'none'; 
         document.body.style.overflow = 'auto'; 
         currentReadingId = null; 
-        
-        if (!fromHistory) {
-            history.back();
-        }
+        if (!fromHistory) history.back();
     }
 
     function markAsRead() {
