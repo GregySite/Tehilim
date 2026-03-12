@@ -49,6 +49,12 @@
         .check-col { width: 40px; text-align: center; }
         input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
 
+        /* Nouveaux styles pour la cellule Versets + Chevron */
+        .v-cell { display: flex; align-items: center; justify-content: space-between; }
+        .v-content { width: 100%; padding-right: 8px; }
+        .chevron { width: 18px; height: 18px; color: #bdc3c7; flex-shrink: 0; transition: transform 0.2s, color 0.2s; }
+        tbody tr:active .chevron { color: var(--accent); transform: translateX(3px); }
+
         .bar-container { width: 100%; background: #eee; height: 4px; border-radius: 2px; margin-top: 4px; }
         .bar { height: 100%; background: var(--accent); border-radius: 2px; }
         .v-text { font-size: 0.75rem; color: #95a5a6; }
@@ -158,13 +164,23 @@
 
             tr.onclick = () => openReader(dayNum, row[0], row[1], row[3]);
             const maxV = (currentMode === 'month') ? 122 : 458;
+            
+            // Ajout du chevron SVG dans la dernière cellule
             tr.innerHTML = `
                 <td class="check-col" onclick="event.stopPropagation()">
                     <input type="checkbox" id="check-${dayNum}" ${checks[dayNum]?'checked':''} onclick="toggleCheck(${dayNum}, this.checked)">
                 </td>
                 <td>${row[0]}</td>
                 <td>${row[1]}</td>
-                <td><span class="v-text">${row[2]} v.</span><div class="bar-container"><div class="bar" style="width: ${(row[2]/maxV)*100}%"></div></div></td>
+                <td>
+                    <div class="v-cell">
+                        <div class="v-content">
+                            <span class="v-text">${row[2]} v.</span>
+                            <div class="bar-container"><div class="bar" style="width: ${(row[2]/maxV)*100}%"></div></div>
+                        </div>
+                        <svg class="chevron" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </td>
             `;
             tbody.appendChild(tr);
         });
